@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+  <title>AMTECH Traveler QR Scanner</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 18px;
+      background: #f3f6fa;
+      color: #17365d;
+      font: 16px Arial, sans-serif;
+    }
+
+    .panel {
+      max-width: 550px;
+      margin: auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 14px;
+      border: 0;
+      border-radius: 6px;
+      background: #17365d;
+      color: white;
+      font-size: 16px;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+    }
+
+    video {
+      display: none;
+      width: 100%;
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+
+    .status {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .error {
+      color: #b00020;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="panel">
+    <h2>AMTECH Traveler QR Scanner</h2>
+
+    <p>
+      Scan the production traveler QR code
+      to populate AMTECH material registration.
+    </p>
+
+    <button id="startButton" type="button">
+      Scan Production Traveler
+    </button>
+
+    <video id="camera" autoplay playsinline muted></video>
+
+    <button id="cancelButton"
+            type="button"
+            style="display:none">
+      Cancel Scan
+    </button>
+
+    <div id="status" class="status">
+      Ready to scan.
+    </div>
+  </div>
+</body>
+</html>
