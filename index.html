@@ -97,6 +97,54 @@ const statusMessage = document.getElementById('status');
 
 let cameraStream = null;
 
+let scanFrameId = null;
+let qrDetected = false;
+
+const scanCanvas = document.createElement('canvas');
+const scanContext = scanCanvas.getContext('2d', {
+  willReadFrequently: true
+});
+
+function scanCameraFrame() {
+  if (!cameraStream || qrDetected) return;
+
+  if (camera.readyState >= 2 &&
+      camera.videoWidth > 0 &&
+      camera.videoHeight > 0) {
+
+    scanCanvas.width = camera.videoWidth;
+    scanCanvas.height = camera.videoHeight;
+
+    scanContext.drawImage(
+      camera, 0, 0,
+      scanCanvas.width, scanCanvas.height
+    );
+
+    const image = scanContext.getImageData(
+      0, 0, scanCanvas.width, scanCanvas.height
+    );
+
+    const result = jsQR(
+      image.data,
+      image.width,
+      image.height,
+      { inversionAttempts: 'dontInvert' }
+    );
+
+    if (result && result.data) {
+      qrDetected = true;
+
+      statusMessage.textContent =
+        'QR code detected: ' + result.data;
+
+      stopCamera();
+      return;
+    }
+  }
+
+  scanFrameId = requestAnimationFrame(scanCameraFrame);
+}
+
 async function startCamera() {
   startButton.disabled = true;
   statusMessage.textContent = 'Opening camera...';
@@ -115,7 +163,8 @@ async function startCamera() {
     cancelButton.style.display = 'block';
 
     await camera.play();
-
+qrDetected = false;
+scanFrameId = requestAnimationFrame(scanCameraFrame);
     statusMessage.textContent =
       'Camera ready — point at the traveler QR code.';
 
@@ -129,7 +178,10 @@ async function startCamera() {
   }
 }
 
-function stopCamera() {
+function stopCamera() {if (scanFrameId !== null) {
+  cancelAnimationFrame(scanFrameId);
+  scanFrameId = null;
+}
   if (cameraStream) {
     cameraStream.getTracks().forEach(function(track) {
       track.stop();
