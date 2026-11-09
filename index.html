@@ -88,5 +88,70 @@
       Ready to scan.
     </div>
   </div>
+
+<script>
+const startButton = document.getElementById('startButton');
+const cancelButton = document.getElementById('cancelButton');
+const camera = document.getElementById('camera');
+const statusMessage = document.getElementById('status');
+
+let cameraStream = null;
+
+async function startCamera() {
+  startButton.disabled = true;
+  statusMessage.textContent = 'Opening camera...';
+  statusMessage.classList.remove('error');
+
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: { ideal: 'environment' }
+      }
+    });
+
+    camera.srcObject = cameraStream;
+    camera.style.display = 'block';
+    cancelButton.style.display = 'block';
+
+    await camera.play();
+
+    statusMessage.textContent =
+      'Camera ready — point at the traveler QR code.';
+
+  } catch (error) {
+    stopCamera();
+    statusMessage.textContent =
+      'Unable to open camera: ' + error.message;
+    statusMessage.classList.add('error');
+  } finally {
+    startButton.disabled = false;
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
+    cameraStream = null;
+  }
+
+  camera.pause();
+  camera.srcObject = null;
+  camera.style.display = 'none';
+  cancelButton.style.display = 'none';
+}
+
+startButton.addEventListener('click', startCamera);
+
+cancelButton.addEventListener('click', function() {
+  stopCamera();
+  statusMessage.textContent = 'Camera scanning stopped.';
+});
+
+window.addEventListener('pagehide', stopCamera);
+</script>
+
 </body>
 </html>
