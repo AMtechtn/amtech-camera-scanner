@@ -178,7 +178,10 @@ scanFrameId = requestAnimationFrame(scanCameraFrame);
   }
 }
 
-function stopCamera() {if (scanFrameId !== null) {
+
+function stopCamera() {
+  if (scanFrameId !== null) {
+
   cancelAnimationFrame(scanFrameId);
   scanFrameId = null;
 }
