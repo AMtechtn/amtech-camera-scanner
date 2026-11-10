@@ -94,8 +94,55 @@ const startButton = document.getElementById('startButton');
 const cancelButton = document.getElementById('cancelButton');
 const camera = document.getElementById('camera');
 const statusMessage = document.getElementById('status');
+const AMTECH_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzXUFY7_uQR-z3xHBYOn3whyHRg4o2367aLG7iroxa-/dev';
+
 
 let cameraStream = null;
+
+function amtechParseTravelerQR(qrText) {
+  const text = String(qrText || '').trim();
+  const fields = text.split('|');
+
+  if (fields[0] !== 'AMTECH-PO-V1') {
+    throw new Error('Not a valid AMTECH traveler QR code.');
+  }
+
+  const data = {};
+
+  fields.slice(1).forEach(function(field) {
+    const separator = field.indexOf('=');
+
+    if (separator <= 0) {
+      throw new Error('Invalid traveler field.');
+    }
+
+    const key = field.slice(0, separator).trim();
+    const value = field.slice(separator + 1).trim();
+
+    if (!key || !value ||
+        Object.prototype.hasOwnProperty.call(data, key)) {
+      throw new Error('Invalid or duplicate traveler field.');
+    }
+
+    if (!['PO', 'CUSTOMER', 'PART', 'QTY'].includes(key)) {
+      throw new Error('Unexpected traveler field: ' + key);
+    }
+
+    data[key] = value;
+  });
+
+  if (!data.PO || !data.CUSTOMER || !data.PART) {
+    throw new Error('Traveler information is incomplete.');
+  }
+
+  if (data.QTY !== undefined &&
+      (!/^[1-9]\d*$/.test(data.QTY) ||
+       !Number.isSafeInteger(Number(data.QTY)))) {
+    throw new Error('Invalid production order quantity.');
+  }
+
+  return data;
+}
 
 let scanFrameId = null;
 let qrDetected = false;
@@ -131,15 +178,35 @@ function scanCameraFrame() {
       { inversionAttempts: 'dontInvert' }
     );
 
-    if (result && result.data) {
-      qrDetected = true;
+    
+if (result && result.data) {
+  try {
+    const traveler = amtechParseTravelerQR(result.data);
 
-      statusMessage.textContent =
-        'QR code detected: ' + result.data;
+    qrDetected = true;
+    stopCamera();
 
-      stopCamera();
-      return;
-    }
+    statusMessage.textContent =
+      'AMTECH traveler recognized: ' +
+      traveler.PO +
+      ' | Customer: ' + traveler.CUSTOMER +
+      ' | Part: ' + traveler.PART;
+
+    statusMessage.classList.remove('error');
+    return;
+
+  } catch (error) {
+    qrDetected = true;
+    stopCamera();
+
+    statusMessage.textContent =
+      'QR rejected: ' + error.message;
+
+    statusMessage.classList.add('error');
+    return;
+  }
+}
+
   }
 
   scanFrameId = requestAnimationFrame(scanCameraFrame);
