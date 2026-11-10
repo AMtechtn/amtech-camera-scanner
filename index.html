@@ -87,6 +87,23 @@
     <div id="status" class="status">
       Ready to scan.
     </div>
+    
+<div id="activitySelection" style="display:none; margin-top:20px;">
+
+  <h3>Select Production Activity</h3>
+
+  <button id="materialRegistrationButton"
+          type="button">
+    Material Registration
+  </button>
+
+  <button id="productionReportingButton"
+          type="button">
+    End-of-Shift Production Reporting
+  </button>
+
+</div>
+
   </div>
 
 <script>
@@ -94,6 +111,15 @@ const startButton = document.getElementById('startButton');
 const cancelButton = document.getElementById('cancelButton');
 const camera = document.getElementById('camera');
 const statusMessage = document.getElementById('status');
+
+const activitySelection =
+  document.getElementById('activitySelection');
+
+const materialRegistrationButton =
+  document.getElementById('materialRegistrationButton');
+
+const productionReportingButton =
+  document.getElementById('productionReportingButton');
 
 const AMTECH_WEB_APP_URL = '';
 
@@ -197,7 +223,12 @@ statusMessage.textContent =
   ' | Order Quantity: ' + (traveler.QTY || 'Not provided');
 
 
-    statusMessage.classList.remove('error');
+    
+activitySelection.style.display = 'block';
+
+materialRegistrationButton.disabled = true;
+productionReportingButton.disabled = true;
+statusMessage.classList.remove('error');
     return;
 
   } catch (error) {
@@ -218,6 +249,11 @@ statusMessage.textContent =
 }
 
 async function startCamera() {
+  
+activitySelection.style.display = 'none';
+materialRegistrationButton.disabled = true;
+productionReportingButton.disabled = true;
+
   startButton.disabled = true;
   statusMessage.textContent = 'Opening camera...';
   statusMessage.classList.remove('error');
