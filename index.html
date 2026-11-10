@@ -121,7 +121,30 @@ const materialRegistrationButton =
 const productionReportingButton =
   document.getElementById('productionReportingButton');
 
-const AMTECH_WEB_APP_URL = '';
+
+const AMTECH_WEB_APP_URL =
+  new URLSearchParams(window.location.search).get('app') || '';
+
+function amtechGetVerifiedDestination() {
+  if (!AMTECH_WEB_APP_URL) {
+    throw new Error('AMTECH web app destination is not configured.');
+  }
+
+  const url = new URL(AMTECH_WEB_APP_URL);
+
+  if (
+    url.protocol !== 'https:' ||
+    url.hostname !== 'script.google.com' ||
+    !/^\/macros\/s\/[^/]+\/(dev|exec)$/.test(url.pathname) ||
+    url.search ||
+    url.hash
+  ) {
+    throw new Error('Invalid AMTECH web app destination.');
+  }
+
+  return url;
+}
+
 
 
 
@@ -180,6 +203,16 @@ const scanContext = scanCanvas.getContext('2d', {
   willReadFrequently: true
 });
 
+function amtechOpenTravelerVerification(qrText) {
+  const traveler = amtechParseTravelerQR(qrText);
+  const url = amtechGetVerifiedDestination();
+
+  url.searchParams.set('page', 'traveler-verification');
+  url.searchParams.set('traveler', qrText.trim());
+
+  window.location.assign(url.toString());
+}
+
 function scanCameraFrame() {
   if (!cameraStream || qrDetected) return;
 
@@ -229,7 +262,9 @@ activitySelection.style.display = 'block';
 materialRegistrationButton.disabled = true;
 productionReportingButton.disabled = true;
 statusMessage.classList.remove('error');
-    return;
+   
+amtechOpenTravelerVerification(result.data);
+ return;
 
   } catch (error) {
     qrDetected = true;
@@ -253,6 +288,14 @@ async function startCamera() {
 activitySelection.style.display = 'none';
 materialRegistrationButton.disabled = true;
 productionReportingButton.disabled = true;
+
+try {
+  amtechGetVerifiedDestination();
+} catch (error) {
+  statusMessage.textContent = error.message;
+  statusMessage.classList.add('error');
+  return;
+}
 
   startButton.disabled = true;
   statusMessage.textContent = 'Opening camera...';
