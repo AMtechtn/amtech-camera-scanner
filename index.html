@@ -188,11 +188,14 @@ if (result && result.data) {
     qrDetected = true;
     stopCamera();
 
-    statusMessage.textContent =
-      'AMTECH traveler recognized: ' +
-      traveler.PO +
-      ' | Customer: ' + traveler.CUSTOMER +
-      ' | Part: ' + traveler.PART;
+    
+statusMessage.textContent =
+  'AMTECH traveler recognized: ' +
+  traveler.PO +
+  ' | Customer: ' + traveler.CUSTOMER +
+  ' | Part: ' + traveler.PART +
+  ' | Order Quantity: ' + (traveler.QTY || 'Not provided');
+
 
     statusMessage.classList.remove('error');
     return;
