@@ -124,6 +124,11 @@ const productionReportingButton =
 
 const AMTECH_WEB_APP_URL =
   new URLSearchParams(window.location.search).get('app') || '';
+  
+const AMTECH_SCAN_MODE =
+  new URLSearchParams(window.location.search)
+    .get('mode') || 'ttm';
+
 
 function amtechGetVerifiedDestination() {
   if (!AMTECH_WEB_APP_URL) {
