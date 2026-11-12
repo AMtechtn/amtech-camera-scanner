@@ -200,6 +200,56 @@ function amtechParseTravelerQR(qrText) {
   return data;
 }
 
+function amtechParseTTMMaterialQR(qrText) {
+  const lines = String(qrText || '')
+    .trim()
+    .split(/\r?\n/);
+
+  const fields = {};
+
+  const allowed = [
+    'AMTECH TRACE ID',
+    'PART NUMBER',
+    'HEAT NUMBER',
+    'LOT NUMBER'
+  ];
+
+  for (const line of lines) {
+    const separator = line.indexOf(':');
+
+    if (separator < 1) {
+      throw new Error('Invalid TTM material label.');
+    }
+
+    const key = line.slice(0, separator).trim().toUpperCase();
+    const value = line.slice(separator + 1).trim();
+
+    if (
+      !allowed.includes(key) ||
+      !value ||
+      Object.prototype.hasOwnProperty.call(fields, key)
+    ) {
+      throw new Error('Invalid or duplicate material label field.');
+    }
+
+    fields[key] = value;
+  }
+
+  if (
+    Object.keys(fields).length !== 4 ||
+    !/^AT-\d{6}$/.test(fields['AMTECH TRACE ID'])
+  ) {
+    throw new Error('Incomplete or invalid TTM material label.');
+  }
+
+  return {
+    traceId: fields['AMTECH TRACE ID'],
+    partNumber: fields['PART NUMBER'],
+    heatNumber: fields['HEAT NUMBER'],
+    lotNumber: fields['LOT NUMBER']
+  };
+}
+
 let scanFrameId = null;
 let qrDetected = false;
 
@@ -213,6 +263,18 @@ function amtechOpenTravelerVerification(qrText) {
   const url = amtechGetVerifiedDestination();
 
   url.searchParams.set('page', 'traveler-verification');
+  url.searchParams.set('traveler', qrText.trim());
+
+  window.location.assign(url.toString());
+}
+
+  function amtechOpenPVCRegistration(qrText) {
+  // Validate the scanned Production Ticket.
+  amtechParseTravelerQR(qrText);
+
+  const url = amtechGetVerifiedDestination();
+
+  url.searchParams.set('page', 'pvc-registration');
   url.searchParams.set('traveler', qrText.trim());
 
   window.location.assign(url.toString());
@@ -268,7 +330,13 @@ materialRegistrationButton.disabled = true;
 productionReportingButton.disabled = true;
 statusMessage.classList.remove('error');
    
-amtechOpenTravelerVerification(result.data);
+
+if (AMTECH_SCAN_MODE === 'pvc-ticket') {
+  amtechOpenPVCRegistration(result.data);
+} else {
+  amtechOpenTravelerVerification(result.data);
+}
+
  return;
 
   } catch (error) {
