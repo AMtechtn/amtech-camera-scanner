@@ -280,6 +280,18 @@ function amtechOpenTravelerVerification(qrText) {
   window.location.assign(url.toString());
 }
 
+function amtechOpenPVCMaterialRegistration(qrText) {
+  // Verify the incoming label format.
+  const material = amtechParseTTMMaterialQR(qrText);
+
+  const url = amtechGetVerifiedDestination();
+
+  url.searchParams.set('page', 'pvc-registration');
+  url.searchParams.set('material', qrText.trim());
+
+  window.location.assign(url.toString());
+}
+
 function scanCameraFrame() {
   if (!cameraStream || qrDetected) return;
 
