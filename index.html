@@ -279,6 +279,19 @@ function amtechOpenTravelerVerification(qrText) {
 
   window.location.assign(url.toString());
 }
+  
+function amtechOpenAssemblyRegistration(qrText) {
+  // Validate the scanned Assembly Production Ticket.
+  amtechParseTravelerQR(qrText);
+
+  const url = amtechGetVerifiedDestination();
+
+  url.searchParams.set('page', 'assembly-registration');
+  url.searchParams.set('traveler', qrText.trim());
+
+  window.location.assign(url.toString());
+}
+
 
 function amtechOpenPVCMaterialRegistration(qrText) {
   // Verify the incoming label format.
@@ -288,6 +301,21 @@ function amtechOpenPVCMaterialRegistration(qrText) {
 
   url.searchParams.set('page', 'pvc-registration');
   url.searchParams.set('material', qrText.trim());
+  
+const pvcTravelerQR =
+  new URLSearchParams(window.location.search)
+    .get('pvcTraveler');
+
+if (!pvcTravelerQR) {
+  throw new Error(
+    'PVC Production Ticket is missing. Scan the PVC ticket first.'
+  );
+}
+
+const pvcTicket = amtechParseTravelerQR(pvcTravelerQR);
+
+url.searchParams.set('traveler', pvcTravelerQR);
+
 
   window.location.assign(url.toString());
 }
@@ -321,6 +349,22 @@ function scanCameraFrame() {
     
 if (result && result.data) {
   try {
+    
+if (AMTECH_SCAN_MODE === 'pvc-material') {
+  const material = amtechParseTTMMaterialQR(result.data);
+
+  qrDetected = true;
+  stopCamera();
+
+  statusMessage.textContent =
+    'TTM material recognized: ' + material.traceId;
+
+  statusMessage.classList.remove('error');
+
+  amtechOpenPVCMaterialRegistration(result.data);
+  return;
+}
+
     const traveler = amtechParseTravelerQR(result.data);
 
     qrDetected = true;
@@ -343,11 +387,15 @@ productionReportingButton.disabled = true;
 statusMessage.classList.remove('error');
    
 
+
 if (AMTECH_SCAN_MODE === 'pvc-ticket') {
   amtechOpenPVCRegistration(result.data);
+} else if (AMTECH_SCAN_MODE === 'assembly-ticket') {
+  amtechOpenAssemblyRegistration(result.data);
 } else {
   amtechOpenTravelerVerification(result.data);
 }
+
 
  return;
 
