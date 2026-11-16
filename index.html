@@ -292,6 +292,32 @@ function amtechOpenAssemblyRegistration(qrText) {
   window.location.assign(url.toString());
 }
 
+function amtechOpenAssemblyIncomingPVC(qrText) {
+  // Validate the incoming PVC Production Ticket QR.
+  amtechParseTravelerQR(qrText);
+
+  const assemblyQR =
+    new URLSearchParams(window.location.search)
+      .get('assembly');
+
+  if (!assemblyQR) {
+    throw new Error(
+      'Assembly Production Ticket is missing. Scan Assembly ticket first.'
+    );
+  }
+
+  // Validate the preserved Assembly Production Ticket QR.
+  amtechParseTravelerQR(assemblyQR);
+
+  const url = amtechGetVerifiedDestination();
+
+  url.searchParams.set('page', 'assembly-registration');
+  url.searchParams.set('traveler', assemblyQR);
+  url.searchParams.set('incomingPVC', qrText.trim());
+
+  window.location.assign(url.toString());
+}
+
 
 function amtechOpenPVCMaterialRegistration(qrText) {
   // Verify the incoming label format.
@@ -388,13 +414,17 @@ statusMessage.classList.remove('error');
    
 
 
+
 if (AMTECH_SCAN_MODE === 'pvc-ticket') {
   amtechOpenPVCRegistration(result.data);
 } else if (AMTECH_SCAN_MODE === 'assembly-ticket') {
   amtechOpenAssemblyRegistration(result.data);
+} else if (AMTECH_SCAN_MODE === 'assembly-pvc') {
+  amtechOpenAssemblyIncomingPVC(result.data);
 } else {
   amtechOpenTravelerVerification(result.data);
 }
+
 
 
  return;
