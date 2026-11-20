@@ -376,6 +376,26 @@ function scanCameraFrame() {
 if (result && result.data) {
   try {
     
+if (AMTECH_SCAN_MODE === 'assembly-pvc-label') {
+  const labelId = String(result.data || '')
+    .trim()
+    .toUpperCase();
+
+  if (!/^PVC-[A-Z0-9-]+-R\d{2,}$/.test(labelId)) {
+    throw new Error('Not a valid PVC batch label QR code.');
+  }
+
+  const url = amtechGetVerifiedDestination();
+  url.searchParams.set('page', 'assembly-pvc-scan-test');
+  url.searchParams.set('incomingPVCLabel', labelId);
+
+  qrDetected = true;
+  stopCamera();
+
+  window.location.assign(url.toString());
+  return;
+}
+
 if (AMTECH_SCAN_MODE === 'pvc-material') {
   const material = amtechParseTTMMaterialQR(result.data);
 
