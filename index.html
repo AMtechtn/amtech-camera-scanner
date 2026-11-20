@@ -385,8 +385,18 @@ if (AMTECH_SCAN_MODE === 'assembly-pvc-label') {
     throw new Error('Not a valid PVC batch label QR code.');
   }
 
+  // Return to normal Assembly registration, preserving its verified
+  // production-traveler QR for server-side re-verification.
+  const assemblyQR = new URLSearchParams(window.location.search)
+    .get('assembly');
+  if (!assemblyQR) {
+    throw new Error('Assembly Production Ticket is missing.');
+  }
+  amtechParseTravelerQR(assemblyQR);
+
   const url = amtechGetVerifiedDestination();
-  url.searchParams.set('page', 'assembly-pvc-scan-test');
+  url.searchParams.set('page', 'assembly-registration');
+  url.searchParams.set('traveler', assemblyQR);
   url.searchParams.set('incomingPVCLabel', labelId);
 
   qrDetected = true;
