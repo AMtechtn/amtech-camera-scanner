@@ -285,6 +285,17 @@ function amtechOpenTravelerVerification(qrText) {
   window.location.assign(url.toString());
 }
   
+function amtechOpenTTMRegistration(qrText) {
+  amtechParseTravelerQR(qrText);
+  const url = amtechGetVerifiedDestination();
+  const equipment = new URLSearchParams(window.location.search).get('equipment');
+  if (equipment && !/^TTM [12]$/.test(equipment)) throw new Error('Invalid TTM machine selection.');
+  url.searchParams.set('page', 'ttm-registration');
+  url.searchParams.set('traveler', qrText.trim());
+  if (equipment) url.searchParams.set('equipment', equipment);
+  window.location.assign(url.toString());
+}
+
 function amtechOpenAssemblyRegistration(qrText) {
   // Validate the scanned Assembly Production Ticket.
   amtechParseTravelerQR(qrText);
@@ -457,6 +468,8 @@ statusMessage.classList.remove('error');
 
 if (AMTECH_SCAN_MODE === 'pvc-ticket') {
   amtechOpenPVCRegistration(result.data);
+} else if (AMTECH_SCAN_MODE === 'ttm-ticket') {
+  amtechOpenTTMRegistration(result.data);
 } else if (AMTECH_SCAN_MODE === 'assembly-ticket') {
   amtechOpenAssemblyRegistration(result.data);
 } else if (AMTECH_SCAN_MODE === 'assembly-pvc') {
