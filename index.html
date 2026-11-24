@@ -275,6 +275,11 @@ function amtechOpenTravelerVerification(qrText) {
   const url = amtechGetVerifiedDestination();
 
   url.searchParams.set('page', 'pvc-registration');
+  const equipment = new URLSearchParams(window.location.search).get('equipment');
+  if (equipment) {
+    if (!/^Oven [1-5]$/.test(equipment)) throw new Error('Invalid PVC oven selection.');
+    url.searchParams.set('equipment', equipment);
+  }
   url.searchParams.set('traveler', qrText.trim());
 
   window.location.assign(url.toString());
@@ -326,6 +331,11 @@ function amtechOpenPVCMaterialRegistration(qrText) {
   const url = amtechGetVerifiedDestination();
 
   url.searchParams.set('page', 'pvc-registration');
+  const equipment = new URLSearchParams(window.location.search).get('equipment');
+  if (equipment) {
+    if (!/^Oven [1-5]$/.test(equipment)) throw new Error('Invalid PVC oven selection.');
+    url.searchParams.set('equipment', equipment);
+  }
   url.searchParams.set('material', qrText.trim());
   
 const pvcTravelerQR =
