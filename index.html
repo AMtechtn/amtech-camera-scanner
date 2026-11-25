@@ -296,6 +296,16 @@ function amtechOpenTTMRegistration(qrText) {
   window.location.assign(url.toString());
 }
 
+// Stage 31: preserve the selected Assembly station only on Assembly returns.
+// This is navigation context, not employee authorization or session assignment.
+function amtechPreserveAssemblyEquipment(url) {
+  const equipment = new URLSearchParams(window.location.search).get('equipment');
+  if (equipment) {
+    if (equipment !== 'Assembly 1') throw new Error('Invalid Assembly equipment selection.');
+    url.searchParams.set('equipment', equipment);
+  }
+}
+
 function amtechOpenAssemblyRegistration(qrText) {
   // Validate the scanned Assembly Production Ticket.
   amtechParseTravelerQR(qrText);
@@ -303,6 +313,7 @@ function amtechOpenAssemblyRegistration(qrText) {
   const url = amtechGetVerifiedDestination();
 
   url.searchParams.set('page', 'assembly-registration');
+  amtechPreserveAssemblyEquipment(url);
   url.searchParams.set('traveler', qrText.trim());
 
   window.location.assign(url.toString());
@@ -328,6 +339,7 @@ function amtechOpenAssemblyIncomingPVC(qrText) {
   const url = amtechGetVerifiedDestination();
 
   url.searchParams.set('page', 'assembly-registration');
+  amtechPreserveAssemblyEquipment(url);
   url.searchParams.set('traveler', assemblyQR);
   url.searchParams.set('incomingPVC', qrText.trim());
 
@@ -417,6 +429,7 @@ if (AMTECH_SCAN_MODE === 'assembly-pvc-label') {
 
   const url = amtechGetVerifiedDestination();
   url.searchParams.set('page', 'assembly-registration');
+  amtechPreserveAssemblyEquipment(url);
   url.searchParams.set('traveler', assemblyQR);
   url.searchParams.set('incomingPVCLabel', labelId);
 
