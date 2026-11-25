@@ -301,7 +301,7 @@ function amtechOpenTTMRegistration(qrText) {
 function amtechPreserveAssemblyEquipment(url) {
   const equipment = new URLSearchParams(window.location.search).get('equipment');
   if (equipment) {
-    if (equipment !== 'Assembly 1') throw new Error('Invalid Assembly equipment selection.');
+    if (!['Assembly 1', 'Assembly 2'].includes(equipment)) throw new Error('Invalid Assembly equipment selection.');
     url.searchParams.set('equipment', equipment);
   }
 }
